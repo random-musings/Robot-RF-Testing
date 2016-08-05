@@ -1,0 +1,126 @@
+#include "VirtualWire.h"
+#include "rfcomm.h"
+
+RFcomm rfcomm;
+
+void setup()
+{
+  Serial.begin(9600);
+ rfcomm.setupRF(11, //receive
+  12, //transmit
+  13, //receive Light
+  8, //transmit light
+  2000);//timeout
+
+}
+
+
+
+void loop()
+{
+
+   const char *msg = "sainsmart mega";
+   rfcomm.update(millis(),msg);
+
+}
+
+/*
+
+#include "SourceFiles\rfcomm.h"
+//#include "SourceFiles\RobotCmd.h"
+
+int testTimeout = 3000;
+int testIx=0;
+long testStart =0;
+RFcomm rfcomm;
+
+Singer singer;
+Dancer dancer;
+
+String currMessage;
+String newMessage;
+String expectedOutput;
+String testPassed=" passed.";
+String testFailed=" failed.";
+
+void setup()
+{
+  Serial.begin(9600);
+  rfcomm.setupRF(11, //receive
+      12, //transmit
+      13, //receive Light
+      8, //transmit light
+      250000);//timeout);
+      
+      newMessage.reserve(200);
+      newMessage="";
+      expectedOutput.reserve(200);
+      expectedOutput = "";
+      currMessage.reserve(200);
+      currMessage="";
+      singer.setup(0);
+      dancer.setup(NULL);
+      testStart=0;
+      
+ 
+}
+
+
+String getTestMessage(int ix)
+{
+  Serial.print(F(" Test "));
+  Serial.print(ix);
+  switch(ix)
+  {
+    case 0: 
+      Serial.println(F(" Sending MARCO. Do we get POLO? "));
+      return String(RobotCmd::MARCO);
+  }
+  return "";
+}
+
+String getTestAnswer(int ix)
+{
+  switch(ix)
+  {
+    case 0: return String(RobotCmd::POLO);
+    
+  }
+  return "";
+}
+
+void loop()
+{
+  
+  bool passed = false;
+  //test 1 send MARCO wait for POLO
+ testStart=millis();
+ if(testIx<2)
+ {
+    
+    currMessage = getTestMessage(testIx);
+    expectedOutput = getTestAnswer(testIx);
+  //  rfcomm.update(millis(),currMessage);
+     Serial.println(" BEFORE WHILE ");
+     const char *msg = "m";
+  //  while( (testStart+testTimeout)> millis()
+  //  && rfcomm.sendState== RF_TRANSMIT)
+  //  {
+      Serial.println("in while");
+      //newMessage = rfcomm.update(millis(),msg);
+      rfcomm.transmit(msg);
+   //   passed = newMessage==expectedOutput || passed;
+     // delay(5);
+   // }
+    Serial.print( passed?testPassed:testFailed);
+ }
+ delay(3000);
+// testIx++;
+
+Serial.print ("sending ");
+   const char *msg = "sainsmart mega";
+Serial.print (msg);
+   rfcomm.update(millis(),msg);
+    delay(3000);
+}
+*/
