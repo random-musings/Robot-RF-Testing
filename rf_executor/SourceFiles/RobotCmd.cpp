@@ -42,9 +42,9 @@ RobotCmd::RobotCmd(){
 
 
 void RobotCmd::setup(int buzzerPin) {
-	  accel.init(20,        // int sampleSize,
+	  accel.init(200,        // int sampleSize,
 				 -7,-7,8,   // int offsetX, int offsetY, int offsetZ,
-				 0.5,0.13,0.03,  // newAttackTolerance, newCollisionTolerance, double newMovingTolerance,
+				 0.4,0.13,0.03,  // newAttackTolerance, newCollisionTolerance, double newMovingTolerance,
 				 2000);     // long newAccelShakeTimeout);
 
 	  singer.setup(buzzerPin);
@@ -56,6 +56,7 @@ void RobotCmd::setup(int buzzerPin) {
   
   void RobotCmd::update(long currTime,char *incomingMessage,char* outgoingMessage ,int outgoingMessageLength)
   {
+	accel.update(currTime);
 	if(motor.motorState != STATE_COLLISION)
 	{
 		singer.update(currTime); 
@@ -82,6 +83,7 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
   
   
   if(accel.collision){
+	Serial.println("COLLISION  COLLISION  COLLISION  COLLISION COLLISION ");
    motor.setState(STATE_COLLISION);
    accel.collision = false;
    return;
@@ -160,9 +162,11 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
 
   if((currTime - lastCommandSent) >commandTimeout)
   {
-		Serial.println(" currently idle and not sent MARCO");
+		Serial.print(" currently idle and not sent MARCO");
+		Serial.print(" timeout:");
+		Serial.print(commandTimeout);
       currState = RBT_IDLE;
-      lastCommandSent = currTime;
+      lastCommandSent = millis();
       freeTime = rand() *500+currTime;
 	  freeTime = freeTime<0?-1*freeTime:freeTime;
   }
@@ -206,6 +210,7 @@ bool RobotCmd::detectNewDanger(char* incomingMessage,long currTime)
   {
     if(incomingMessage[0]== RobotCmd::DANGER || accel.attacked)
     {
+		Serial.println("DANGER  DANGER  DANGER  DANGER DANGER ");
       singer.stop();
       dancer.stop();
       motor.motorSpeed =FAST;

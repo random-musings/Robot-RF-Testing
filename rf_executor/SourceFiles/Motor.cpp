@@ -286,7 +286,7 @@ void Motor::update(long currTime)
 	
 		if(motorState == STATE_COLLISION){
 			motorState = ( currTime-state_last_change )> collisionAvoidanceTime
-				? STATE_FORWARD //auto set state to forward after 3 seconds
+				? STATE_IDLE //auto set state to forward after 3 seconds
 				: STATE_COLLISION;
 			TurnRight(currTime);
 		}

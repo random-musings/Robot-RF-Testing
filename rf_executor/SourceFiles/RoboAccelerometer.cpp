@@ -31,7 +31,7 @@ void RoboAccelerometer::init(int sampleSize,
 		movingTolerance = newMovingTolerance;
 		attackTolerance  =  newAttackTolerance;
 		accelShakeTimeout = newAccelShakeTimeout;
-/*		Serial.println("Accelerometer baseline");
+		Serial.println("Accelerometer baseline");
 		Serial.print(accel_center_x);
 		Serial.print(",");
 		Serial.print(accel_center_y);
@@ -39,7 +39,7 @@ void RoboAccelerometer::init(int sampleSize,
 		Serial.print(accel_center_z);
 		Serial.print("  ");
 		Serial.println("______________");
-		*/
+		
 	}
 		
 		
@@ -72,33 +72,38 @@ void RoboAccelerometer::init(int sampleSize,
 	void RoboAccelerometer::update(long currTime)
 	{
       
+	  if(accelAvail)
+	  {
 		  bool acc_shake = false;
 			acc.readGs(&aX, &aY, &aZ);
-			Serial.print(aX);
-			Serial.print(",");
-			Serial.print(aY);
-			Serial.print(",");
-			Serial.print(aZ);
-			Serial.print("  ");
-			
-			acc_shake = ( abs(abs(aY)- abs(accel_center_y)) >= movingTolerance
-			  || abs(abs(aZ)- abs(accel_center_z)) >= movingTolerance 
-			  || abs(abs(aX)- abs(accel_center_x)) >= movingTolerance);
+		double moveY = aY - accel_center_y;
+		double moveZ = aZ - accel_center_z;
+		moveY =moveY<0? -1*moveY:moveY;
+		moveZ =moveZ<0? -1*moveZ:moveZ;
+			//we ignore the X axis because it is gravity and prone to jumping
+			acc_shake = moveY >= movingTolerance
+			  || moveZ >= movingTolerance ;
+		//	  || abs(abs(aX)- abs(accel_center_x)) >= movingTolerance);
 			  
-			collision =(abs((abs(aY)- abs(accel_center_y))) >= collisionTolerance
-  			|| abs((abs(aX)- abs(accel_center_x))) >= collisionTolerance
-	  		|| abs((abs(aZ)- abs(accel_center_z))) >= collisionTolerance);
+			collision =moveY >= collisionTolerance
+  		//	|| abs((abs(aX)- abs(accel_center_x))) >= collisionTolerance
+	  		|| moveZ >= collisionTolerance;
 
-       attacked = (abs((abs(aY)- abs(accel_center_y))) >= attackTolerance
-        || abs((abs(aX)- abs(accel_center_x))) >= attackTolerance
-        || abs((abs(aZ)- abs(accel_center_z))) >= attackTolerance);
-		
-	
-		if(collision){ Serial.println(" Collision");}
-        
-			lastReadShake   = acc_shake? currTime:lastReadShake;
-			moving  = acc_shake || (currTime -lastReadShake)< accelShakeTimeout;
-			calcAngle();
+       attacked =moveY >= attackTolerance
+     //   || abs((abs(aX)- abs(accel_center_x))) >= attackTolerance
+        ||  moveZ >= attackTolerance;
+			
+			if(collision || attacked){
+				
+				Serial.print(aX);
+				Serial.print(",");
+				Serial.print(aY);
+				Serial.print(",");
+				Serial.print(aZ);
+				Serial.print("  ");
+			}
+			collision = attacked?false:collision;
+		}
 	}
 		
 	void RoboAccelerometer::calcAngle()

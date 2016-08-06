@@ -42,9 +42,6 @@ void setup()
   receiveMessage = new char[receiveMessageLength];
 }
 
-
-
-
 String getTestMessage(int ix)
 {
   Serial.print(F(" Test "));
@@ -68,6 +65,9 @@ String getTestMessage(int ix)
      case 4:
     Serial.println(F("Send DANGER to other robot. Does it run? "));
      return String(RobotCmd::DANGER);       
+       case 5:
+    Serial.println(F("Please kick the other robot. Does it send DANGER? "));
+     return "";    
   }
   return "";
 }
@@ -81,6 +81,7 @@ String getTestAnswer(int ix)
     case 2: return String(RobotCmd::MARCO);
     case 3: return String(RobotCmd::SONG);  
     case 4: return String(RobotCmd::OK);  
+    case 5: return String(RobotCmd::DANGER);
   }
   return "";
 }
@@ -95,17 +96,20 @@ void loop()
    currMessage = getTestMessage(testIx);
    rfcomm.update(millis(),currMessage,receiveMessage, receiveMessageLength);
    expectedOutput =getTestAnswer(testIx);
-   while( (testStart+testTimeout)> millis()&& !passed)
+   while(   !passed && (testStart+testTimeout)> millis())
     {
         rfcomm.update(millis(),currMessage,receiveMessage, receiveMessageLength);
+         passed = receiveMessage[0]==expectedOutput[0] || passed;
         if(strlen(receiveMessage)>0)
         {
+          Serial.print(" passed?");
+          Serial.print(passed);
           Serial.print("Expected ");
           Serial.print(expectedOutput);
           Serial.print(" Received:");
           Serial.println(receiveMessage);
          }
-        passed = receiveMessage[0]==expectedOutput[0] || passed;
+       
     }
    Serial.println( passed?testPassed:testFailed);
    testIx += passed?1:0;
