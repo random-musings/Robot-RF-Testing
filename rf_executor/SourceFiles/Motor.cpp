@@ -17,7 +17,7 @@
 	wheel_last_change  = 0;
 	motorSpeed= FAST;
 	lastUpdate =0;
-	collisionAvoidanceTime = 3000;
+	collisionAvoidanceTime = 1000;
 }
 
 

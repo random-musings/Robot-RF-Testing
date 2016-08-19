@@ -28,7 +28,7 @@ void setup()
   digitalWrite(31, HIGH);
   delay(1000);
   digitalWrite(31, LOW);
-  robotcmd.motor.motorState = STATE_IDLE;
+  robotcmd.motor.motorState = 0;
 
   receiveMessage = new char[receiveMessageLength];
   currMsg = new char[receiveMessageLength];
@@ -57,6 +57,7 @@ void loop()
 
     if (strlen(receiveMessage) > 0)
     {
+      robotcmd.lastCommandSent = millis();
      sprintf(currMsg, "%s", receiveMessage);
      waitForAcknowledgment = false;
       Serial.print("received: ");

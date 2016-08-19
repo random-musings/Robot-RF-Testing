@@ -42,11 +42,14 @@ RobotCmd::RobotCmd(){
 
 
 void RobotCmd::setup(int buzzerPin) {
+	//start motors so we get accurate base line
+	motor.Forward(255);
+	delay(100);
 	  accel.init(200,        // int sampleSize,
 				 -7,-7,8,   // int offsetX, int offsetY, int offsetZ,
-				 0.3,0.18,0.03,  // newAttackTolerance, newCollisionTolerance, double newMovingTolerance,
+				 0.5,0.25,0.03,  // newAttackTolerance, newCollisionTolerance, double newMovingTolerance,
 				 2000);     // long newAccelShakeTimeout);
-
+	motor.Stop();
 	  singer.setup(buzzerPin);
 	  dancer.setup(&motor);
 	  singer.stop();
@@ -57,7 +60,7 @@ void RobotCmd::setup(int buzzerPin) {
   void RobotCmd::update(long currTime,char *incomingMessage,char* outgoingMessage ,int outgoingMessageLength)
   {
 	accel.update(currTime);
-	if(motor.motorState != STATE_COLLISION)
+	if(motor.motorState != motor.enumDir::COLLISION)
 	{
 		singer.update(currTime); 
 		dancer.update(currTime);
@@ -87,8 +90,9 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
 	double currentReading =  abs(accel.aY) + abs(accel.aZ);
 	if(currentReading> collisionReading)
 	{
-		Serial.println("COLLISION  COLLISION  COLLISION  COLLISION COLLISION ");
-	   motor.setState(STATE_COLLISION);
+		collisionReading = currentReading +1;
+		Serial.println("COLLISION ");
+	   motor.setState(motor.enumDir::COLLISION);
 	   accel.collision = false;
    }
    return;
@@ -100,7 +104,7 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
  }
  
   
-  if(motor.motorState == STATE_COLLISION)
+  if(motor.motorState == motor.enumDir::COLLISION)
   {
 		//when encountering a collision get us out of a jam before resuming all activities
 		return;
@@ -162,6 +166,7 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
 	  //determines the song we sing
 	  safeFeeling = safeFeeling< (singer.maxSafeFeeling-10)?safeFeeling+10:safeFeeling;
 	  outgoingMessage[0] = MARCO;
+	  collisionReading = accel.accel_center_z+ accel.accel_center_y;
       return;
     }
  }
@@ -173,6 +178,8 @@ void RobotCmd::processMessage(long currTime, char* incomingMessage,  char* outgo
       lastCommandSent = millis();
       freeTime = rand() *500+currTime;
 	  freeTime = freeTime<0?-1*freeTime:freeTime;
+	   collisionReading =accel.accel_center_z+ accel.accel_center_y;
+	   
   }
 
 }
@@ -184,21 +191,21 @@ bool RobotCmd::processDanger(long currTime)
   if(currState== RBT_DANGER )
   {
 	
-	if(motor.motorSpeed != STATE_COLLISION)
+	if(motor.motorState != motor.enumDir::COLLISION)
 	{
 		if((currTime - dangerTime) >dangerNear
-		&& motor.motorState == STATE_BACKWARD){ //1st stage after running away
+		&& motor.motorState == motor.enumDir::BACKWARD){ //1st stage after running away
 		  motor.Stop();
-		  motor.setState(STATE_IDLE);
+		  motor.setState(motor.enumDir::IDLE);
 		}
 		if((currTime - dangerTime) >dangerCautious
-			&& motor.motorState == STATE_IDLE){ //2nd stage creep back slowly
+			&& motor.motorState == motor.enumDir::IDLE){ //2nd stage creep back slowly
 		  motor.Stop();
-		  motor.setState(STATE_FORWARD);
+		  motor.setState(motor.enumDir::FORWARD);
 		  collisionReading =accel.accel_center_x+ accel.accel_center_y;
 		}
 		if((currTime - dangerTime) > dangerOver){ //3rd stage being playing
-		  motor.setState(STATE_IDLE);
+		  motor.setState(motor.enumDir::IDLE);
 		  motor.Stop();
 		  currState = RBT_IDLE;
 		  collisionReading = accel.accel_center_x+ accel.accel_center_y;
@@ -218,11 +225,11 @@ bool RobotCmd::detectNewDanger(char* incomingMessage,long currTime)
   {
     if(incomingMessage[0]== RobotCmd::DANGER || accel.attacked)
     {
-		Serial.println("DANGER  DANGER  DANGER  DANGER DANGER ");
+		Serial.println("DANGER   ");
       singer.stop();
       dancer.stop();
-      motor.motorSpeed =FAST;
-      motor.setState(STATE_BACKWARD);
+      motor.currSpeed =motor.enumSpeed::FAST;
+      motor.setState(motor.enumDir::BACKWARD);
       currState = RBT_DANGER;
       dangerTime = currTime;
 	  safeFeeling = 0;

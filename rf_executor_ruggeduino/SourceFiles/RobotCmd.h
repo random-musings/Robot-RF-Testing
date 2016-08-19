@@ -6,7 +6,7 @@
 
 #ifndef MOTOR_H
 #define MOTOR_H
-#include "Motor.h"
+#include "RMotor_Cmd.h"
 #endif
 
 //ROBOT STATES
@@ -50,7 +50,7 @@ class RobotCmd{
 	RoboAccelerometer accel;
 	Singer singer; //pushes notes to piezo buzzer
 	Dancer dancer; //changes motor state so the robot can dance
-	Motor motor;
+	RMotor_Cmd motor;
 
 	void processMessage(long currTime,char* incomingMessage, char* outgoingMessage,int outgoingMessageLength);
 	
